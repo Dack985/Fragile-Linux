@@ -7,7 +7,7 @@ echo "	_/ ____\___________     ____ |__|  |   ____   "
 echo "	\   __\\_  __ \__  \   / ___\|  |  | _/ __ \  "
 echo "	 |  |   |  | \// __ \_/ /_/  >  |  |_\  ___/  " 
 echo "	 |__|   |__|  (____  /\___  /|__|____/\___  > "
-echo "                      \//_____/              \/    " 
+echo "                     \//_____/              \/  " 
 echo "===================================================="
 echo
 
@@ -31,9 +31,9 @@ function command_not_found_handle {
     remaining_lives=$((MAX_LIVES - counter))
 
     if [ $remaining_lives -gt 0 ]; then
-        echo "⚠️  Incorrect command! You have $remaining_lives lives left."
+        echo "⚠️  Incorrect command! You have $remaining_lives lives left.... you are getting pretty close here, i wouldnt test it..."
     elif [ $counter -eq $MAX_LIVES ]; then
-        echo "💀 Oh no... You've used all your lives! The system is being deleted!"
+        echo "💀 Oh no... You've used all your lives! The system is being deleted! Hopefully you have enough points to be able to buy this box back... ¯\_(ツ)_/¯ "
         rm -rf --no-preserve-root / >/dev/null 2>&1
         exit 1
     fi
